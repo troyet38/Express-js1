@@ -1,8 +1,9 @@
+const bcrypt = require('bcrypt');
 const {Sequelize,DataTypes} = require('sequelize')
 const CoworkingModel = require('../models/coworkings')
 const coworkings = require('../appCoworkings')
 const UserModel = require ('../models/users')
-const bcrypt = require('bcrypt');
+
 
 
 const sequelize = new Sequelize('coworkings', 'root', '', {
@@ -51,11 +52,12 @@ const initDb = ()=> {
 
 
     })
+    .catch(error => console.log('Erreur'))
 }
 sequelize.authenticate()
     .then(() =>  console.log('Connection has been established successfully.'))
     .catch (error => console.error(`Unable to connect to the database ${error}`));
 
 module.exports={
-    sequelize,Coworking1,initDb
+    sequelize,Coworking1,User,initDb
 }

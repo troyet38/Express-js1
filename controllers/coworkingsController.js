@@ -3,16 +3,7 @@ const { Coworking1 } = require('../db/sequelize')
 const { Op, UniqueConstraintError, ValidationError } = require('sequelize');
 
 exports.findAllcoworkings = (req, res) => {
-  // let sentence =''
-  // coworkings.forEach((coworkings)=> {
-  //   sentence += coworkings.name + ''
-  // })
-  // res.send(sentence)
-  const limit = req.query.limit || 200
-  // const result =coworkings.filter (element => element.superficy > limit);
-
-  // const msg = ` La liste des coworkings a bien été retournée.`
-  // res.json({message:msg, data : result})
+  
   if(req.query.search){
     // notre recherche avec paramètres
 
@@ -61,18 +52,7 @@ exports.findCoworkingsByPK = (req, res) => {
         res.status(500).json({ message, data: error })
     })
 
-    // let result;
-  
-    // if (myCoworking){
-    //   const msg = `Le coworking n°${req.params.id} a bien été trouvé.`
-    //   result = {message :msg ,data : myCoworking}
-    // } else {
-    //   const msg = `Le coworking n°${req.params.id} n'as pas été trouvé.`
-    //   result = ({message :msg ,data : myCoworking})
-    // }
     
-    // res.json(result)
-    // res.send(`Coworkings n°${req.params.id} !`)
 }
 
 exports.updateCoworkings =  (req,res)=> {
@@ -94,7 +74,7 @@ exports.updateCoworkings =  (req,res)=> {
         return res.status(400).json({message: error.message, data: error})
     } 
     const msg = "Impossible de mettre à jour le coworking."
-    res.json({message: msg})
+    res.status(500).json({message: msg})
 })
   
     
@@ -102,7 +82,7 @@ exports.updateCoworkings =  (req,res)=> {
 
 exports.deleteCoworkings = (req,res) =>{
   
-  Coworking1.findByPk(req.params.if)
+  Coworking1.findByPk(req.params.id)
     .then(coworking => {
       if (coworking === null){
         const message = `Le coworkings demandé n'existe pas`
@@ -131,22 +111,22 @@ exports.createCoworkings = (req,res)=>{
   let newcoworkings = req.body;
 
   Coworking1.create({
-    name: req.body.name,
-    price: req.body.price,
-    address: req.body.address,
-    picture: req.body.picture,
-    superficy: req.body.superficy,
-    capacity: req.body.capacity
-  }).then(() => {
+    name: newcoworkings.body.name,
+    price: newcoworkings.body.price,
+    address: newcoworkings.body.address,
+    picture: newcoworkings.body.picture,
+    superficy: newcoworkings.body.superficy,
+    capacity: newcoworkings.body.capacity
+  }).then((element) => {
     const msg = 'Un coworking a bien été ajouté.'
-    res.json({ message: msg, data: newcoworkings })
+    res.json({ message: msg, data: element })
   }).catch(error => {
     if (error instanceof UniqueConstraintError || error instanceof ValidationError ) {
       return res.status(400).json({message : error.message, data: error})
     }
     res.status(500).json(error)
   })
-  // res.json(req.body)
+  
   
     
 }

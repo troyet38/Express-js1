@@ -1,12 +1,14 @@
 const express = require('express')
 const router = express.Router();
 
-let coworkingsController = require('../controllers/coworkingsController')
+const coworkingsController = require('../controllers/coworkingsController')
+
+const authoContoller = require('../controllers/authController')
 
 router 
     .route('/')
     .get(coworkingsController.findAllcoworkings)
-    .post(coworkingsController.createCoworkings)
+    .post(authoContoller.protect, coworkingsController.createCoworkings)
 
 
 
@@ -14,7 +16,7 @@ router
     .route('/:id')
     .get(coworkingsController.findCoworkingsByPK)
 
-    .put(coworkingsController.updateCoworkings)
+    .put(authoContoller.protect,coworkingsController.updateCoworkings)
 
     .delete(coworkingsController.deleteCoworkings)
 
