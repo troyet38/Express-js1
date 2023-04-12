@@ -13,6 +13,15 @@ module.exports = (sequelize, DataTypes) => {
       },
       password: {
         type: DataTypes.STRING
+      },
+      roles :{
+        type :DataTypes.STRING,
+        set(roles){
+          this.setDataValue('roles',roles.join());
+        },
+        get(){
+          return this.getDataValue('roles').split(',');
+        }
       }
     },{
         timestamps: true,

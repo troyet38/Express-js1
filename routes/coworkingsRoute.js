@@ -18,7 +18,7 @@ router
 
     .put(authoContoller.protect,coworkingsController.updateCoworkings)
 
-    .delete(coworkingsController.deleteCoworkings)
+    .delete(authoContoller.protect,coworkingsController.deleteCoworkings)
 
 
     

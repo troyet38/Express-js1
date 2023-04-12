@@ -36,7 +36,8 @@ const initDb = ()=> {
             .then((hash) => {
                 UserModel.create({
                     username :'Saitama',
-                    password:  hash
+                    password:  hash,
+                    roles: ['user', 'admin']
                 })
             })
             .catch(err => console.log(err))
@@ -45,7 +46,8 @@ const initDb = ()=> {
             .then((hash) => {
                 UserModel.create({
                     username :'Naruto',
-                    password:  hash
+                    password:  hash,
+                    roles: ['user']
                 })
             })
             .catch(error => console.log('Erreur'))    
