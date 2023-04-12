@@ -1,6 +1,8 @@
 const {Sequelize,DataTypes} = require('sequelize')
 const CoworkingModel = require('../models/coworkings')
 const coworkings = require('../appCoworkings')
+const UserModel = require ('../models/users')
+const bcrypt = require('bcrypt');
 
 
 const sequelize = new Sequelize('coworkings', 'root', '', {
@@ -13,6 +15,7 @@ const sequelize = new Sequelize('coworkings', 'root', '', {
 
 
 const Coworking1 = CoworkingModel(sequelize,DataTypes);
+const User = UserModel(sequelize,DataTypes)
 
 const initDb = ()=> {
     return sequelize.sync({force :true})
@@ -28,6 +31,24 @@ const initDb = ()=> {
             })
 
         })
+        bcrypt.hash('mdp',10)
+            .then((hash) => {
+                UserModel.create({
+                    username :'Saitama',
+                    password:  hash
+                })
+            })
+            .catch(err => console.log(err))
+
+        bcrypt.hash('mdp',10)
+            .then((hash) => {
+                UserModel.create({
+                    username :'Naruto',
+                    password:  hash
+                })
+            })
+            .catch(error => console.log('Erreur'))    
+
 
     })
 }

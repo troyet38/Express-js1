@@ -1,5 +1,6 @@
 let coworkings = require('../appCoworkings')
 const { Coworking1 } = require('../db/sequelize')
+const { Op, UniqueConstraintError, ValidationError } = require('sequelize');
 
 exports.findAllcoworkings = (req, res) => {
   // let sentence =''
@@ -12,32 +13,53 @@ exports.findAllcoworkings = (req, res) => {
 
   // const msg = ` La liste des coworkings a bien été retournée.`
   // res.json({message:msg, data : result})
-  Coworking1.findAll()
-    .then((elements) => {
-      const msg ='la liste des coworkings a bien été recupérer en base de données'
-      res.json({message:msg,data:elements})
+  if(req.query.search){
+    // notre recherche avec paramètres
 
+    Coworking1.findAll({ where: { name: {[Op.like] : `%${req.query.search}%`} } })
+    .then((elements)=>{
+        if(!elements.length){
+            return res.json({message: "Aucun coworking ne correspond à votre recherche"})    
+        }
+        const msg = 'La liste des coworkings a bien été récupérée en base de données.'
+        res.json({message: msg, data: elements})
     })
-    .catch((error)=> {
-      const msg='une erreur est survenue'
-      res.json( {message : msg})
-    })  
+    .catch((error) => {
+        const msg = 'Une erreur est survenue.'
+        res.status(500).json({message: msg})
+    })
+  } else {
+    Coworking1.findAll()
+      .then((elements) => {
+        const msg ='la liste des coworkings a bien été recupérer en base de données'
+        res.json({message:msg,data:elements})
+
+      })
+      .catch((error)=> {
+        const msg='une erreur est survenue'
+        res.json( {message : msg})
+      })  
+  }
+  
 }
 
 exports.findCoworkingsByPK = (req, res) => {
 
-    let myCoworking = coworkings.find((coworkings)=> {
-      return coworkings.id == req.params.id
+ 
+  Coworking1.findByPk(req.params.id)
+    .then(coworking => {
+        if (coworking === null) {
+            const message = `Le coworking demandé n'existe pas.`
+            res.status(404).json({ message })
+        } else {
+            const message = "Un coworking a bien été trouvé."
+            res.json({ message, data: coworking });
+        }
     })
-    Coworking1.findByPk(req.params.id)
-      .then(()=> {
-        const msg = `Le coworking n° a bien été trouvé.`
-        res.json ({message :msg})
-      })
-      .catch(() => {
-        const msg = `Le coworking n°${req.params.id} n'as pas été trouvé.`
-        res.json ({message :msg })
-      })
+    .catch(error => {
+        const message = `La liste des coworkings n'a pas pu se charger. Reessayez ulterieurement.`
+        res.status(500).json({ message, data: error })
+    })
 
     // let result;
   
@@ -60,35 +82,48 @@ exports.updateCoworkings =  (req,res)=> {
       id : req.params.id
     }
   }).then((coworking) => {
-    if ( Coworking1 === null){
+    if ( coworking === null){
       const msg = "Le coworking demandé n'existe pas"
       res.json({message:msg})
     }else {
       const msg = "Le coworking a bien éte modifié."
       res.json({message:msg,data:coworking})
     }
-  })
+  }).catch((error) => {
+    if(error instanceof UniqueConstraintError || error instanceof ValidationError){
+        return res.status(400).json({message: error.message, data: error})
+    } 
+    const msg = "Impossible de mettre à jour le coworking."
+    res.json({message: msg})
+})
   
     
 }
 
 exports.deleteCoworkings = (req,res) =>{
-  const coworkingToDelete = coworkings.find(el => el.id == req.params.id)
   
-  if (!coworkingToDelete) {
-    return res.status(404).json({ message: `Aucun coworking ne correspond à l'id ${req.params.id}` })
-  }
-
-  
-  let coworkingsUpdated = []
-  coworkings.forEach((el) => {
-      if (el.id != coworkingToDelete.id) {
-          coworkingsUpdated.push(el)
+  Coworking1.findByPk(req.params.if)
+    .then(coworking => {
+      if (coworking === null){
+        const message = `Le coworkings demandé n'existe pas`
+        return res.status(404).json({message})
       }
-  })
-
-  coworkings = coworkingsUpdated;
-  res.json(coworkings)
+      return Coworking1.destroy({
+        where :{
+          id: req.params.id
+        }
+      })
+        .then(() => {
+          const message = `Le coworkings ${coworking.name} a bien été suprimé`
+          res.json({message,data:coworking})
+        })
+    })
+    .catch(error => {
+      const message = `Impossible de supprimer le coworking.`
+      res.status(500).json({message,data:error}) 
+    })
+  
+  
     
 }
 
@@ -105,8 +140,13 @@ exports.createCoworkings = (req,res)=>{
   }).then(() => {
     const msg = 'Un coworking a bien été ajouté.'
     res.json({ message: msg, data: newcoworkings })
-  }).catch(error => res.json(error))
-  res.json(req.body)
+  }).catch(error => {
+    if (error instanceof UniqueConstraintError || error instanceof ValidationError ) {
+      return res.status(400).json({message : error.message, data: error})
+    }
+    res.status(500).json(error)
+  })
+  // res.json(req.body)
   
     
 }
